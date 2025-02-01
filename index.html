@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HealthBuddy - Your Medical Companion</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* Neubrutalism Theme */
+        :root {
+            --shadow-color: rgba(0, 0, 0, 0.8);
+        }
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background-color: #f0f7ff;
+        }
+        .neu-brutal {
+            border: 3px solid black;
+            box-shadow: 5px 5px 0 var(--shadow-color);
+            transition: all 0.2s ease;
+        }
+        .neu-brutal:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 7px 7px 0 var(--shadow-color);
+        }
+        .reminder-item {
+            animation: slideIn 0.3s ease;
+        }
+        @keyframes slideIn {
+            from { transform: translateX(-100%); }
+            to { transform: translateX(0); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="bg-[#4FB8E7] p-4 neu-brutal mb-8">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-bold">HealthBuddy</h1>
+            <div class="space-x-4">
+                <a href="#home" class="font-bold">Home</a>
+                <a href="#appointments" class="font-bold">Appointments</a>
+                <a href="#store" class="font-bold">Store</a>
+                <a href="#reminders" class="font-bold">Reminders</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mx-auto px-4">
+        <!-- Medicine Reminder Section -->
+        <section id="reminders" class="mb-12">
+            <div class="neu-brutal bg-[#FFE761] p-6 rounded-lg">
+                <h2 class="text-2xl font-bold mb-4">Medicine Reminders</h2>
+                <div class="flex flex-col md:flex-row gap-4">
+                    <input type="text" id="medicineInput" placeholder="Medicine Name" class="neu-brutal p-2 rounded">
+                    <input type="time" id="timeInput" class="neu-brutal p-2 rounded">
+                    <button onclick="addReminder()" class="neu-brutal bg-[#4FB8E7] p-2 rounded font-bold">Add Reminder</button>
+                </div>
+                <div id="reminderList" class="mt-4 space-y-2"></div>
+            </div>
+        </section>
+
+        <!-- Appointment Booking Section -->
+        <section id="appointments" class="mb-12">
+            <div class="neu-brutal bg-[#FF90BC] p-6 rounded-lg">
+                <h2 class="text-2xl font-bold mb-4">Book Appointment</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <select id="doctorSelect" class="neu-brutal p-2 rounded">
+                        <option value="">Select Doctor</option>
+                        <option value="cardio">Cardiologist</option>
+                        <option value="derma">Dermatologist</option>
+                        <option value="neuro">Neurologist</option>
+                    </select>
+                    <input type="date" id="dateInput" class="neu-brutal p-2 rounded">
+                    <input type="text" id="nameInput" placeholder="Your Name" class="neu-brutal p-2 rounded">
+                    <input type="tel" id="phoneInput" placeholder="Phone Number" class="neu-brutal p-2 rounded">
+                    <button onclick="bookAppointment()" class="neu-brutal bg-[#4FB8E7] p-2 rounded font-bold col-span-2">Book Now</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Medical Store Section -->
+        <section id="store" class="mb-12">
+            <div class="neu-brutal bg-[#98EECC] p-6 rounded-lg">
+                <h2 class="text-2xl font-bold mb-4">Medical Store</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="productList">
+                    <!-- Products will be added here dynamically -->
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        // Medicine Reminder Logic
+        function addReminder() {
+            const medicine = document.getElementById('medicineInput').value;
+            const time = document.getElementById('timeInput').value;
+            if (!medicine || !time) return;
+
+            const reminderList = document.getElementById('reminderList');
+            const reminder = document.createElement('div');
+            reminder.className = 'neu-brutal bg-white p-4 rounded reminder-item flex justify-between items-center';
+            reminder.innerHTML = `
+                <div>
+                    <strong>${medicine}</strong> - ${time}
+                </div>
+                <button onclick="this.parentElement.remove()" class="text-red-500"><i class="bi bi-trash"></i></button>
+            `;
+            reminderList.appendChild(reminder);
+            
+            // Set up notification
+            const now = new Date();
+            const [hours, minutes] = time.split(':');
+            const reminderTime = new Date(now.setHours(hours, minutes));
+            
+            if (Notification.permission === "granted") {
+                const notification = setTimeout(() => {
+                    new Notification("Medicine Reminder", {
+                        body: `Time to take ${medicine}!`
+                    });
+                }, reminderTime - new Date());
+            }
+
+            document.getElementById('medicineInput').value = '';
+            document.getElementById('timeInput').value = '';
+        }
+
+        // Appointment Booking Logic
+        function bookAppointment() {
+            const doctor = document.getElementById('doctorSelect').value;
+            const date = document.getElementById('dateInput').value;
+            const name = document.getElementById('nameInput').value;
+            const phone = document.getElementById('phoneInput').value;
+
+            if (!doctor || !date || !name || !phone) {
+                alert('Please fill all fields!');
+                return;
+            }
+
+            alert(`Appointment booked successfully!\nDoctor: ${doctor}\nDate: ${date}\nName: ${name}`);
+            
+            // Reset form
+            document.getElementById('doctorSelect').value = '';
+            document.getElementById('dateInput').value = '';
+            document.getElementById('nameInput').value = '';
+            document.getElementById('phoneInput').value = '';
+        }
+
+        // Medical Store Logic
+        const products = [
+            { name: 'Paracetamol', price: 5.99, image: 'https://source.unsplash.com/random/200x200?medicine' },
+            { name: 'First Aid Kit', price: 25.99, image: 'https://source.unsplash.com/random/200x200?firstaid' },
+            { name: 'Vitamins', price: 15.99, image: 'https://source.unsplash.com/random/200x200?vitamins' }
+        ];
+
+        function initStore() {
+            const productList = document.getElementById('productList');
+            products.forEach(product => {
+                const productCard = document.createElement('div');
+                productCard.className = 'neu-brutal bg-white p-4 rounded';
+                productCard.innerHTML = `
+                    <img src="${product.image}" alt="${product.name}" class="w-full h-48 object-cover mb-4 neu-brutal">
+                    <h3 class="font-bold">${product.name}</h3>
+                    <p class="text-lg">$${product.price}</p>
+                    <button onclick="addToCart('${product.name}')" class="neu-brutal bg-[#4FB8E7] p-2 rounded mt-2 w-full font-bold">
+                        Add to Cart
+                    </button>
+                `;
+                productList.appendChild(productCard);
+            });
+        }
+
+        function addToCart(productName) {
+            alert(`${productName} added to cart!`);
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            initStore();
+            if (Notification.permission !== "granted") {
+                Notification.requestPermission();
+            }
+        });
+    </script>
+<script>document.body.addEventListener('wheel', e => { if (!e.ctrlKey) return; e.preventDefault(); return }, { passive: false })</script>
+	</body>
+</html>
